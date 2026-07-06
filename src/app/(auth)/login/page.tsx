@@ -1,33 +1,45 @@
-"use client";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { api, tokenStorage } from "@/lib/api";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import type { ApiResponse, AuthData } from "@/types";
+'use client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useAuth } from '@/context/AuthContext'
+import { api } from '@/lib/api'
+import type { ApiResponse, AuthData } from '@/types'
+import { zodResolver } from '@hookform/resolvers/zod'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
 
-const schema = z.object({ email: z.string().email(), password: z.string().min(8) });
-type FormValues = z.infer<typeof schema>;
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+})
+type FormValues = z.infer<typeof schema>
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const router = useRouter()
+  const { login } = useAuth()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const { data } = await api.post<ApiResponse<AuthData>>("/auth/login", values);
-      tokenStorage.set(data.data.accessToken, data.data.refreshToken);
-      toast.success("Logged in successfully");
-      router.push("/");
+      const { data } = await api.post<ApiResponse<AuthData>>(
+        '/auth/login',
+        values,
+      )
+      login(data.data.accessToken, data.data.refreshToken, data.data.user)
+      toast.success('Logged in successfully')
+      router.push('/')
     } catch {
-      toast.error("Invalid email or password");
+      toast.error('Invalid email or password')
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -35,22 +47,33 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" {...register("email")} />
-          {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+          <Input id="email" type="email" {...register('email')} />
+          {errors.email && (
+            <p className="text-sm text-red-500">{errors.email.message}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" {...register("password")} />
-          {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+          <Input id="password" type="password" {...register('password')} />
+          {errors.password && (
+            <p className="text-sm text-red-500">{errors.password.message}</p>
+          )}
         </div>
         <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? "Signing in..." : "Sign in"}
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
         </Button>
       </form>
       <div className="flex justify-between text-sm">
-        <Link href="/forgot-password" className="text-muted-foreground hover:underline">Forgot password?</Link>
-        <Link href="/register" className="hover:underline">Create account</Link>
+        <Link
+          href="/forgot-password"
+          className="text-muted-foreground hover:underline"
+        >
+          Forgot password?
+        </Link>
+        <Link href="/register" className="hover:underline">
+          Create account
+        </Link>
       </div>
     </div>
-  );
+  )
 }

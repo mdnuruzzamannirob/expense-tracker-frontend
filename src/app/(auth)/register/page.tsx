@@ -6,7 +6,8 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api, tokenStorage } from "@/lib/api";
+import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { ApiResponse, AuthData } from "@/types";
@@ -21,12 +22,13 @@ type FormValues = z.infer<typeof schema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (values: FormValues) => {
     try {
       const { data } = await api.post<ApiResponse<AuthData>>("/auth/register", values);
-      tokenStorage.set(data.data.accessToken, data.data.refreshToken);
+      login(data.data.accessToken, data.data.refreshToken, data.data.user);
       toast.success("Account created");
       router.push("/");
     } catch {

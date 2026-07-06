@@ -1,20 +1,16 @@
-"use client";
-import { Button } from "@/components/ui/button";
-import { api, tokenStorage } from "@/lib/api";
-import { useRouter } from "next/navigation";
+'use client'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/context/AuthContext'
+import { useRouter } from 'next/navigation'
 
 export function LogoutButton() {
-  const router = useRouter();
+  const router = useRouter()
+  const { logout } = useAuth()
 
   const handleLogout = async () => {
-    const refreshToken = tokenStorage.getRefresh();
-    try {
-      if (refreshToken) await api.post("/auth/logout", { refreshToken });
-    } finally {
-      tokenStorage.clear();
-      router.push("/login");
-    }
-  };
+    await logout()
+    router.push('/login')
+  }
 
-  return <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>;
+  return <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
 }
