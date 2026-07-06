@@ -1,20 +1,18 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { tokenStorage } from "@/lib/api";
+'use client'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [checked, setChecked] = useState(false);
+  const router = useRouter()
+  const { user, isLoading } = useAuth()
 
   useEffect(() => {
-    if (!tokenStorage.getAccess()) {
-      router.replace("/login");
-    } else {
-      setChecked(true);
+    if (!isLoading && !user) {
+      router.replace('/login')
     }
-  }, [router]);
+  }, [isLoading, user, router])
 
-  if (!checked) return null;
-  return <>{children}</>;
+  if (isLoading || !user) return null
+  return <>{children}</>
 }
