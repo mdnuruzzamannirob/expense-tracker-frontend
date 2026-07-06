@@ -1,14 +1,18 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { ApiResponse, Transaction, TransactionFilters } from "@/types";
 
-export function useTransactionsQuery(filters?: TransactionFilters) {
-  return useQuery({
+export function useTransactionsQuery(
+  filters?: TransactionFilters,
+  options?: Omit<UseQueryOptions<ApiResponse<Transaction[]>>, "queryKey" | "queryFn">
+) {
+  return useQuery<ApiResponse<Transaction[]>>({
     queryKey: ["transactions", filters],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<Transaction[]>>("/transactions", { params: filters });
       return data;
     },
+    ...options,
   });
 }
 

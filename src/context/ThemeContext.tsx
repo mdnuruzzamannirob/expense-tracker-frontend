@@ -1,27 +1,32 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
+import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
 
-type Theme = "light" | "dark";
-interface ThemeContextValue { theme: Theme; toggleTheme: () => void; }
+type Theme = "light" | "dark" | "system";
+interface ThemeContextValue { theme: Theme | undefined; setTheme: (theme: Theme) => void; toggleTheme: () => void; }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  return (
+    <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeProviderInternal>{children}</ThemeProviderInternal>
+    </NextThemesProvider>
+  );
+}
 
-  useEffect(() => {
-    const stored = document.cookie.split("; ").find((r) => r.startsWith("theme="))?.split("=")[1] as Theme | undefined;
-    if (stored) setTheme(stored);
-  }, []);
+function ThemeProviderInternal({ children }: { children: React.ReactNode }) {
+  const { theme, setTheme } = useNextTheme();
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.cookie = `theme=${theme}; path=/; max-age=31536000`;
-  }, [theme]);
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
-  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
-
-  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme: theme as Theme, setTheme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

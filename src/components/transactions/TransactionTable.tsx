@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Transaction } from "@/types";
 import { Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
 
 interface Props {
   transactions: Transaction[];
@@ -12,6 +14,12 @@ interface Props {
 }
 
 export function TransactionTable({ transactions, onEdit, onDelete }: Props) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <Table>
       <TableHeader>
@@ -26,7 +34,9 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Props) {
       <TableBody>
         {transactions.map((t) => (
           <TableRow key={t.id}>
-            <TableCell>{new Date(t.date).toLocaleDateString()}</TableCell>
+            <TableCell>
+              {mounted ? format(new Date(t.date), "MM/dd/yyyy") : ""}
+            </TableCell>
             <TableCell>{t.category?.name ?? t.categoryId}</TableCell>
             <TableCell><Badge variant={t.type === "INCOME" ? "default" : "destructive"}>{t.type}</Badge></TableCell>
             <TableCell className="text-right">{t.amount.toFixed(2)}</TableCell>

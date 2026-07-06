@@ -22,8 +22,8 @@ export function ImportCsvDialog() {
 
   return (
     <Dialog>
-      <DialogTrigger>
-        <Button variant="outline">Import CSV</Button>
+      <DialogTrigger render={<Button variant="outline" />}>
+        Import CSV
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

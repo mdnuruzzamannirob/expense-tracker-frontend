@@ -30,7 +30,7 @@ interface Props {
 export function TransactionForm({ defaultValues, onSubmit, isSubmitting }: Props) {
   const { data: categories } = useCategoriesQuery();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: defaultValues as FormValues,
   });
 

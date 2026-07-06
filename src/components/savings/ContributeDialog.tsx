@@ -21,10 +21,8 @@ export function ContributeDialog({ goalId, onContribute }: Props) {
 
   return (
     <Dialog>
-      <DialogTrigger>
-        <Button size="sm" variant="outline">
-          Contribute
-        </Button>
+      <DialogTrigger render={<Button size="sm" variant="outline" />}>
+        Contribute
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

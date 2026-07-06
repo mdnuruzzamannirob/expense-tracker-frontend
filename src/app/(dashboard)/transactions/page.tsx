@@ -41,8 +41,10 @@ export default function TransactionsPage() {
         <div className="flex gap-2">
           <ImportCsvDialog />
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger>
-              <Button onClick={() => setEditing(null)}>Add Transaction</Button>
+            <DialogTrigger
+              render={<Button onClick={() => setEditing(null)} />}
+            >
+              Add Transaction
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>

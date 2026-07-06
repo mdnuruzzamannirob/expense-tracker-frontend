@@ -18,7 +18,7 @@ export default function BudgetsPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Budgets</h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger ><Button>Set Budget</Button></DialogTrigger>
+          <DialogTrigger render={<Button />}>Set Budget</DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Set Monthly Budget</DialogTitle></DialogHeader>
             <BudgetForm

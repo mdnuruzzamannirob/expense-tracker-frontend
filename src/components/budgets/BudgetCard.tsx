@@ -11,7 +11,7 @@ export function BudgetCard({ budget }: { budget: Budget }) {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">{budget.category.name ?? budget.categoryId}</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-base">{budget.categoryName ?? budget.categoryId}</CardTitle></CardHeader>
       <CardContent>
         <div className="flex justify-between text-sm mb-2">
           <span>{spent.toFixed(2)}</span>

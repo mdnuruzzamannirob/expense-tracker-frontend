@@ -25,7 +25,7 @@ export default function SavingsGoalsPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Savings Goals</h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger><Button>New Goal</Button></DialogTrigger>
+          <DialogTrigger render={<Button />}>New Goal</DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Create Savings Goal</DialogTitle></DialogHeader>
             <form
