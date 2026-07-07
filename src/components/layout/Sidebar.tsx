@@ -70,9 +70,10 @@ export function Sidebar() {
               href={href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-3 rounded-md px-3 py-2  text-sm transition-colors',
                 'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 active && 'bg-accent text-accent-foreground',
+                !isOpen && 'flex items-center justify-center',
               )}
             >
               <Icon
