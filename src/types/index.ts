@@ -83,15 +83,16 @@ export interface MonthlyReport {
   netSavings: number;
 }
 
-export interface TrendPoint {
-  month: string;
-  income: number;
-  expense: number;
+export type TrendPoint = {
+  date: string
+  income: number
+  expense: number
 }
 
-export interface CategoryBreakdownPoint {
-  name: string;
-  value: number;
+export type CategoryBreakdownPoint = {
+  categoryId: string
+  categoryName: string
+  amount: number
 }
 
 export interface AdminUser {
