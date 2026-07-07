@@ -1,16 +1,21 @@
 'use client'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
 
 export function LogoutButton() {
-  const router = useRouter()
   const { logout } = useAuth()
-
-  const handleLogout = async () => {
-    await logout()
-    router.push('/login')
-  }
-
-  return <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
+  // AuthContext.logout already handles API call + redirect + tab
+  // broadcast. We just need to invoke it.
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      onClick={logout}
+      aria-label="Sign out"
+    >
+      <LogOut className="h-4 w-4" />
+    </Button>
+  )
 }

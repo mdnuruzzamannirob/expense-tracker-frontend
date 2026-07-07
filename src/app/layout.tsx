@@ -44,7 +44,13 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {' '}
         <Providers>{children}</Providers>
-        <Toaster />
+        <Toaster
+          position="top-center"
+          richColors
+          expand
+          visibleToasts={3}
+          swipeDirections={['left', 'right', 'bottom', 'top']}
+        />
       </body>
     </html>
   )

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
 
 interface Props {
@@ -18,37 +19,66 @@ interface Props {
 
 export function ContributeDialog({ goalId, onContribute }: Props) {
   const [amount, setAmount] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const handleSubmit = () => {
+    const parsed = parseFloat(amount)
+    if (Number.isNaN(parsed) || parsed <= 0) {
+      setError('Enter a positive amount')
+      return
+    }
+    onContribute(goalId, parsed)
+    setAmount('')
+    setError(null)
+    setOpen(false)
+  }
 
   return (
-    <Dialog>
-      <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        Contribute
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            aria-label="Contribute to goal"
+          />
+        }
+      >
+        <PlusCircle className="h-4 w-4" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Contribution</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="amount">Amount</Label>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit()
+          }}
+          className="space-y-4"
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor={`contribute-amount-${goalId}`}>Amount</Label>
             <Input
-              id="amount"
+              id={`contribute-amount-${goalId}`}
               type="number"
               step="0.01"
+              inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value)
+                if (error) setError(null)
+              }}
+              autoFocus
             />
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
-          <Button
-            className="w-full"
-            onClick={() => {
-              onContribute(goalId, parseFloat(amount))
-              setAmount('')
-            }}
-          >
-            Add
+          <Button type="submit" className="w-full">
+            Add Contribution
           </Button>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

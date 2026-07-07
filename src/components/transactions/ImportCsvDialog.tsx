@@ -8,6 +8,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { useImportTransactionsMutation } from '@/hooks/useTransactions'
+import { extractErrorMessage } from '@/lib/api'
+import { FileSpreadsheet, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function ImportCsvDialog() {
@@ -16,13 +18,20 @@ export function ImportCsvDialog() {
   const handleFile = (file: File) => {
     importMutation.mutate(file, {
       onSuccess: () => toast.success('CSV imported successfully'),
-      onError: () => toast.error('Import failed - check file format'),
+      onError: (error) =>
+        toast.error(
+          extractErrorMessage(
+            error,
+            'Import failed. Please check the file format and try again.',
+          ),
+        ),
     })
   }
 
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={<Button variant="outline" className="gap-1.5" />}>
+        <Upload className="h-4 w-4" />
         Import CSV
       </DialogTrigger>
       <DialogContent>
@@ -30,7 +39,7 @@ export function ImportCsvDialog() {
           <DialogTitle>Import Transactions</DialogTitle>
         </DialogHeader>
         <div
-          className="border-2 border-dashed rounded-md p-8 text-center text-sm text-muted-foreground cursor-pointer"
+          className="border-2 border-dashed rounded-md p-8 text-center text-sm text-muted-foreground cursor-pointer hover:bg-muted/30 transition-colors"
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault()
@@ -39,6 +48,7 @@ export function ImportCsvDialog() {
           }}
           onClick={() => document.getElementById('csv-input')?.click()}
         >
+          <FileSpreadsheet className="h-10 w-10 mx-auto mb-3" />
           {importMutation.isPending
             ? 'Importing...'
             : 'Drag & drop a CSV file here, or click to select'}
