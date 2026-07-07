@@ -3,7 +3,7 @@ import { AxiosError, isAxiosError } from 'axios'
 type ServerErrorBody = {
   message?: string
   success?: boolean
-  errors?: unknown
+  errors?: Array<{ path: string; message: string }> | unknown
 }
 
 const STATUS_FALLBACKS: Record<number, string> = {
@@ -25,14 +25,38 @@ const STATUS_FALLBACKS: Record<number, string> = {
 const NETWORK_ERROR = 'Network error. Please check your connection and try again.'
 const UNKNOWN_ERROR = 'An unexpected error occurred. Please try again.'
 
+function humanizeField(path: string): string {
+  if (!path) return ''
+  // শেষ অংশটাই field-এর নাম — যেমন "body.amount" -> "amount"
+  const parts = path.split('.')
+  const last = parts[parts.length - 1]
+  // camelCase থেকে space-separated human readable করা
+  return last
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (s) => s.toUpperCase())
+    .trim()
+}
+
+function buildMessageFromErrors(errors: unknown): string | null {
+  if (!Array.isArray(errors) || errors.length === 0) return null
+  const first = errors[0] as { path?: string; message?: string }
+  if (first && typeof first === 'object' && first.message) {
+    const field = humanizeField(first.path ?? '')
+    if (field) return `${field}: ${first.message}`
+    return first.message
+  }
+  return null
+}
+
 /**
  * Returns a user-facing error message.
  *
  * Priority:
  *  1. The `fallback` argument, if provided.
- *  2. The backend's `message` field (for Axios errors with a response body).
- *  3. A status-code-based default.
- *  4. A generic "network" or "unexpected" fallback.
+ *  2. The backend's `errors[0]` field (for Axios errors with a structured validation body).
+ *  3. The backend's `message` field (for Axios errors with a response body).
+ *  4. A status-code-based default.
+ *  5. A generic "network" or "unexpected" fallback.
  */
 export function extractErrorMessage(
   error: unknown,
@@ -46,9 +70,26 @@ export function extractErrorMessage(
     const axiosError = error as AxiosError<ServerErrorBody>
 
     if (axiosError.response) {
+      const body = axiosError.response.data
+      if (body) {
+        const fromErrors = buildMessageFromErrors(body.errors)
+        if (fromErrors) return fromErrors
+      }
+
       const message = axiosError.response.data?.message
       if (message && typeof message === 'string' && message.trim()) {
-        return message
+        // raw Zod codes যেমন "body.categoryId: Required" কে ভালো করা
+        const cleaned = message
+          .replace(/^body\./, '')
+          .replace(/^params\./, '')
+          .replace(/^query\./, '')
+        // যদি "key: message" প্যাটার্ন থাকে তাহলে humanize করা
+        const m = cleaned.match(/^([\w.]+):\s*(.+)$/)
+        if (m) {
+          const field = humanizeField(m[1])
+          if (field) return `${field}: ${m[2]}`
+        }
+        return cleaned
       }
       return (
         STATUS_FALLBACKS[axiosError.response.status] ??

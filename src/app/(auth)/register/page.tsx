@@ -1,45 +1,46 @@
-"use client";
-import { useState } from "react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { api, extractErrorMessage } from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import type { ApiResponse, AuthData } from "@/types";
-
-const schema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-  currency: z.string().optional(),
-});
-type FormValues = z.infer<typeof schema>;
+"use client"
+import { useState } from "react"
+import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { api, extractErrorMessage } from "@/lib/api"
+import { useAuth } from "@/context/AuthContext"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import type { ApiResponse, AuthData } from "@/types"
+import { RegisterFormValues, registerSchema } from "@/lib/schema"
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const { setUser } = useAuth();
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const router = useRouter()
+  const { setUser } = useAuth()
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+  })
 
-  const onSubmit = async (values: FormValues) => {
-    setSubmitError(null);
+  const onSubmit = async (values: RegisterFormValues) => {
+    setSubmitError(null)
     try {
-      const { data } = await api.post<ApiResponse<AuthData>>("/auth/register", values);
-      setUser(data.data.user);
-      toast.success("Account created");
-      router.push("/");
+      const { data } = await api.post<ApiResponse<AuthData>>("/auth/register", values)
+      setUser(data.data.user)
+      toast.success("Account created")
+      router.push("/")
     } catch (error) {
-      const message = extractErrorMessage(error, "We couldn't create your account. Please check your details and try again.");
-      setSubmitError(message);
-      toast.error(message);
+      const message = extractErrorMessage(
+        error,
+        "We couldn't create your account. Please check your details and try again.",
+      )
+      setSubmitError(message)
+      toast.error(message)
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -48,17 +49,33 @@ export default function RegisterPage() {
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>
           <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
-          {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+          {errors.name && (
+            <p className="text-sm text-red-500">{errors.name.message}</p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" aria-invalid={!!errors.email} {...register("email")} />
-          {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+          <Input
+            id="email"
+            type="email"
+            aria-invalid={!!errors.email}
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-sm text-red-500">{errors.email.message}</p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="password">Password (min 8 chars)</Label>
-          <Input id="password" type="password" aria-invalid={!!errors.password} {...register("password")} />
-          {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+          <Input
+            id="password"
+            type="password"
+            aria-invalid={!!errors.password}
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="text-sm text-red-500">{errors.password.message}</p>
+          )}
         </div>
         {submitError && (
           <p
@@ -72,7 +89,12 @@ export default function RegisterPage() {
           {isSubmitting ? "Creating..." : "Create account"}
         </Button>
       </form>
-      <p className="text-sm text-center">Already have an account? <Link href="/login" className="hover:underline">Sign in</Link></p>
+      <p className="text-sm text-center">
+        Already have an account?{" "}
+        <Link href="/login" className="hover:underline">
+          Sign in
+        </Link>
+      </p>
     </div>
-  );
+  )
 }

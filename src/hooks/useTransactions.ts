@@ -2,6 +2,17 @@ import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from "@ta
 import { api } from "@/lib/api";
 import type { ApiResponse, Transaction, TransactionFilters } from "@/types";
 
+export type CreateTransactionInput = {
+  type: "INCOME" | "EXPENSE";
+  amount: number;
+  categoryId: string;
+  date: string;
+  note?: string;
+  tags: string[];
+  isRecurring: boolean;
+  recurringRule?: "DAILY" | "WEEKLY" | "MONTHLY";
+};
+
 export function useTransactionsQuery(
   filters?: TransactionFilters,
   options?: Omit<UseQueryOptions<ApiResponse<Transaction[]>>, "queryKey" | "queryFn">
@@ -19,7 +30,7 @@ export function useTransactionsQuery(
 export function useAddTransactionMutation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Partial<Transaction>) =>
+    mutationFn: async (payload: CreateTransactionInput) =>
       (await api.post<ApiResponse<Transaction>>("/transactions", payload)).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["transactions"] });

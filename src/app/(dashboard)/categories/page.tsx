@@ -1,127 +1,62 @@
-"use client";
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+'use client'
+import { CategoryAddModal } from '@/components/categories/CategoryAddModal'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/tooltip'
 import {
   useCategoriesQuery,
-  useCreateCategoryMutation,
   useDeleteCategoryMutation,
-} from "@/hooks/useCategories";
-import { extractErrorMessage } from "@/lib/api";
-import { Plus, Trash2, Tag } from "lucide-react";
-import { toast } from "sonner";
+} from '@/hooks/useCategories'
+import { extractErrorMessage } from '@/lib/api'
+import { Plus, Tag, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function CategoriesPage() {
-  const { data: categories, isLoading } = useCategoriesQuery();
-  const createMutation = useCreateCategoryMutation();
-  const deleteMutation = useDeleteCategoryMutation();
-  const [name, setName] = useState("");
-  const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
+  const query = useCategoriesQuery()
+  const categories = query.data?.pages.flatMap((p) => p.data) ?? []
+  const isLoading = query.isLoading
+  const deleteMutation = useDeleteCategoryMutation()
+  const [confirmDelete, setConfirmDelete] = useState<{
+    id: string
+    name: string
+  } | null>(null)
 
-  const handleCreate = () => {
-    if (!name.trim()) {
-      toast.error("Please enter a category name");
-      return;
-    }
-    createMutation.mutate(
-      { name: name.trim(), type },
-      {
-        onSuccess: () => {
-          toast.success("Category created");
-          setName("");
-        },
-        onError: (error) => {
-          toast.error(extractErrorMessage(error, "Could not create category"));
-        },
+  const handleConfirmDelete = () => {
+    if (!confirmDelete) return
+    deleteMutation.mutate(confirmDelete.id, {
+      onSuccess: () => {
+        toast.success('Category deleted')
+        setConfirmDelete(null)
       },
-    );
-  };
-
-  const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Delete category "${name}"? This cannot be undone.`)) return;
-    deleteMutation.mutate(id, {
       onError: (error) => {
-        toast.error(extractErrorMessage(error, "Could not delete category"));
+        toast.error(extractErrorMessage(error, 'Could not delete category'))
       },
-    });
-  };
+    })
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Categories</h1>
+        <CategoryAddModal
+          iconOnly={false}
+          label="Add Category"
+          trigger={
+            <Button className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              Add Category
+            </Button>
+          }
+        />
       </div>
-
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap items-end gap-2 max-w-2xl">
-            <div className="space-y-1.5 flex-1 min-w-[200px]">
-              <Label htmlFor="newCategoryName">Name</Label>
-              <Input
-                id="newCategoryName"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="New category"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleCreate();
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-1.5 w-[180px]">
-              <Label htmlFor="newCategoryType">Type</Label>
-              <Select
-                value={type}
-                onValueChange={(value) =>
-                  setType(value as "INCOME" | "EXPENSE")
-                }
-              >
-                <SelectTrigger id="newCategoryType" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EXPENSE">Expense</SelectItem>
-                  <SelectItem value="INCOME">Income</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    onClick={handleCreate}
-                    disabled={createMutation.isPending || !name.trim()}
-                    className="gap-1.5"
-                  >
-                    <Plus className="h-4 w-4" />
-                    {createMutation.isPending ? "Adding..." : "Add"}
-                  </Button>
-                }
-              />
-              <TooltipContent>Create category</TooltipContent>
-            </Tooltip>
-          </div>
-        </CardContent>
-      </Card>
 
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -145,7 +80,7 @@ export default function CategoriesPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{c.name}</p>
                   <Badge
-                    variant={c.type === "INCOME" ? "default" : "destructive"}
+                    variant={c.type === 'INCOME' ? 'default' : 'destructive'}
                     className="mt-1"
                   >
                     {c.type}
@@ -158,7 +93,9 @@ export default function CategoriesPage() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(c.id, c.name)}
+                        onClick={() =>
+                          setConfirmDelete({ id: c.id, name: c.name })
+                        }
                         disabled={deleteMutation.isPending}
                         aria-label={`Delete ${c.name}`}
                       >
@@ -177,10 +114,27 @@ export default function CategoriesPage() {
           <CardContent className="p-12 flex flex-col items-center justify-center text-center text-muted-foreground">
             <Tag className="h-10 w-10 mb-3" />
             <p className="font-medium">No categories yet</p>
-            <p className="text-sm">Create your first category above to start organizing transactions.</p>
+            <p className="text-sm">
+              Create your first category to start organizing transactions.
+            </p>
           </CardContent>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onOpenChange={(open) => !open && setConfirmDelete(null)}
+        title="Delete category?"
+        description={
+          confirmDelete
+            ? `Are you sure you want to delete "${confirmDelete.name}"? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+        isLoading={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
-  );
+  )
 }

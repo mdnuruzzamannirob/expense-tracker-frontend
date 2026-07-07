@@ -4,6 +4,8 @@ import { ImportCsvDialog } from '@/components/transactions/ImportCsvDialog'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { TransactionTable } from '@/components/transactions/TransactionTable'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +14,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   useAddTransactionMutation,
   useDeleteTransactionMutation,
@@ -20,10 +21,11 @@ import {
   useUpdateTransactionMutation,
 } from '@/hooks/useTransactions'
 import { extractErrorMessage } from '@/lib/api'
-import { toast } from 'sonner'
+import { TransactionFormValues } from '@/lib/schema'
 import type { Transaction } from '@/types'
 import { Plus, Receipt } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function TransactionsPage() {
   const { data, isLoading } = useTransactionsQuery({
@@ -37,17 +39,9 @@ export default function TransactionsPage() {
   const deleteMutation = useDeleteTransactionMutation()
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [open, setOpen] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
-  const handleSubmit = (values: {
-    type: 'INCOME' | 'EXPENSE'
-    amount: number
-    categoryId: string
-    date: string
-    note?: string
-    tags?: string[]
-    isRecurring?: boolean
-    recurringRule?: 'DAILY' | 'WEEKLY' | 'MONTHLY'
-  }) => {
+  const handleSubmit = (values: TransactionFormValues) => {
     if (editing) {
       updateMutation.mutate(
         { id: editing.id, payload: values },
@@ -58,7 +52,9 @@ export default function TransactionsPage() {
             setEditing(null)
           },
           onError: (error) => {
-            toast.error(extractErrorMessage(error, 'Could not update transaction'))
+            toast.error(
+              extractErrorMessage(error, 'Could not update transaction'),
+            )
           },
         },
       )
@@ -75,10 +71,13 @@ export default function TransactionsPage() {
     }
   }
 
-  const handleDelete = (id: string) => {
-    if (!confirm('Delete this transaction? This cannot be undone.')) return
-    deleteMutation.mutate(id, {
-      onSuccess: () => toast.success('Transaction deleted'),
+  const handleConfirmDelete = () => {
+    if (!confirmDelete) return
+    deleteMutation.mutate(confirmDelete, {
+      onSuccess: () => {
+        toast.success('Transaction deleted')
+        setConfirmDelete(null)
+      },
       onError: (error) => {
         toast.error(extractErrorMessage(error, 'Could not delete transaction'))
       },
@@ -100,10 +99,7 @@ export default function TransactionsPage() {
           >
             <DialogTrigger
               render={
-                <Button
-                  onClick={() => setEditing(null)}
-                  className="gap-1.5"
-                />
+                <Button onClick={() => setEditing(null)} className="gap-1.5" />
               }
             >
               <Plus className="h-4 w-4" />
@@ -144,7 +140,7 @@ export default function TransactionsPage() {
                 setEditing(t)
                 setOpen(true)
               }}
-              onDelete={handleDelete}
+              onDelete={(id) => setConfirmDelete(id)}
             />
           </CardContent>
         </Card>
@@ -159,6 +155,17 @@ export default function TransactionsPage() {
           </CardContent>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onOpenChange={(open) => !open && setConfirmDelete(null)}
+        title="Delete transaction?"
+        description="Are you sure you want to delete this transaction? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        isLoading={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

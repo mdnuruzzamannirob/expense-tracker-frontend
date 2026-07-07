@@ -1,8 +1,8 @@
 'use client'
-import { ContributeDialog } from '@/components/savings/ContributeDialog'
 import { GoalCard } from '@/components/savings/GoalCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DatePicker } from '@/components/ui/date-picker'
 import {
   Dialog,
@@ -15,27 +15,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import {
   useContributeToGoalMutation,
   useCreateGoalMutation,
   useDeleteGoalMutation,
   useSavingsGoalsQuery,
 } from '@/hooks/useSavingsGoals'
 import { extractErrorMessage } from '@/lib/api'
-import { Plus, Target, Trash2 } from 'lucide-react'
+import { SavingsGoalFormInput, SavingsGoalFormValues, savingsGoalSchema } from '@/lib/schema'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Plus, Target } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-
-interface GoalFormValues {
-  title: string
-  targetAmount: number
-  deadline: string
-}
 
 export default function SavingsGoalsPage() {
   const { data: goals, isLoading } = useSavingsGoalsQuery()
@@ -43,15 +34,22 @@ export default function SavingsGoalsPage() {
   const deleteMutation = useDeleteGoalMutation()
   const createMutation = useCreateGoalMutation()
   const [open, setOpen] = useState(false)
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { errors },
-  } = useForm<GoalFormValues>()
+  const [confirmDelete, setConfirmDelete] = useState<{
+    id: string
+    title: string
+  } | null>(null)
 
-  const onCreate = (values: GoalFormValues) => {
+ const {
+   register,
+   handleSubmit,
+   reset,
+   control,
+   formState: { errors },
+ } = useForm<SavingsGoalFormInput, any, SavingsGoalFormValues>({
+   resolver: zodResolver(savingsGoalSchema),
+ })
+
+  const onCreate = (values: SavingsGoalFormValues) => {
     createMutation.mutate(values, {
       onSuccess: () => {
         toast.success('Goal created')
@@ -64,9 +62,13 @@ export default function SavingsGoalsPage() {
     })
   }
 
-  const handleDelete = (id: string, title: string) => {
-    if (!confirm(`Delete goal "${title}"? This cannot be undone.`)) return
-    deleteMutation.mutate(id, {
+  const handleConfirmDelete = () => {
+    if (!confirmDelete) return
+    deleteMutation.mutate(confirmDelete.id, {
+      onSuccess: () => {
+        toast.success('Goal deleted')
+        setConfirmDelete(null)
+      },
       onError: (error) => {
         toast.error(extractErrorMessage(error, 'Could not delete goal'))
       },
@@ -96,7 +98,7 @@ export default function SavingsGoalsPage() {
                 <Input
                   id="title"
                   aria-invalid={!!errors.title}
-                  {...register('title', { required: 'Title is required' })}
+                  {...register('title')}
                 />
                 {errors.title && (
                   <p className="text-sm text-red-500">{errors.title.message}</p>
@@ -110,11 +112,7 @@ export default function SavingsGoalsPage() {
                   step="0.01"
                   inputMode="decimal"
                   aria-invalid={!!errors.targetAmount}
-                  {...register('targetAmount', {
-                    required: 'Target amount is required',
-                    valueAsNumber: true,
-                    min: { value: 1, message: 'Must be greater than 0' },
-                  })}
+                  {...register('targetAmount')}
                 />
                 {errors.targetAmount && (
                   <p className="text-sm text-red-500">
@@ -127,13 +125,13 @@ export default function SavingsGoalsPage() {
                 <Controller
                   control={control}
                   name="deadline"
-                  rules={{ required: 'Deadline is required' }}
                   render={({ field }) => (
                     <DatePicker
                       id="deadline"
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Pick a deadline"
+                      outputFormat="yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
                     />
                   )}
                 />
@@ -170,45 +168,23 @@ export default function SavingsGoalsPage() {
       ) : goals && goals.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {goals.map((g) => (
-            <div key={g.id} className="space-y-2">
-              <GoalCard goal={g} />
-              <div className="flex gap-2">
-                <ContributeDialog
-                  goalId={g.id}
-                  onContribute={(id, amount) =>
-                    contributeMutation.mutate(
-                      { id, amount },
-                      {
-                        onError: (error) =>
-                          toast.error(
-                            extractErrorMessage(
-                              error,
-                              'Could not add contribution',
-                            ),
-                          ),
-                      },
-                    )
-                  }
-                />
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(g.id, g.title)}
-                        disabled={deleteMutation.isPending}
-                        aria-label={`Delete ${g.title}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    }
-                  />
-                  <TooltipContent>Delete goal</TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
+            <GoalCard
+              key={g.id}
+              goal={g}
+              onContribute={(id, amount) =>
+                contributeMutation.mutate(
+                  { id, amount },
+                  {
+                    onError: (error) =>
+                      toast.error(
+                        extractErrorMessage(error, 'Could not add contribution'),
+                      ),
+                  },
+                )
+              }
+              onDelete={(id, title) => setConfirmDelete({ id, title })}
+              isDeleting={deleteMutation.isPending}
+            />
           ))}
         </div>
       ) : (
@@ -222,6 +198,21 @@ export default function SavingsGoalsPage() {
           </CardContent>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onOpenChange={(open) => !open && setConfirmDelete(null)}
+        title="Delete savings goal?"
+        description={
+          confirmDelete
+            ? `Are you sure you want to delete "${confirmDelete.title}"? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+        isLoading={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

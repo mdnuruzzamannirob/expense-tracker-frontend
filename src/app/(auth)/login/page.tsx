@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/context/AuthContext'
 import { api, extractErrorMessage } from '@/lib/api'
+import { LoginFormValues, loginSchema } from '@/lib/schema'
 import type { ApiResponse, User } from '@/types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
@@ -11,13 +12,6 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
-
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-})
-type FormValues = z.infer<typeof schema>
 
 export default function LoginPage() {
   const router = useRouter()
@@ -27,19 +21,16 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) })
+  } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) })
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: LoginFormValues) => {
     setSubmitError(null)
     try {
       const { data } = await api.post<ApiResponse<{ user: User }>>(
         '/auth/login',
         values,
       )
-      // Cookies are set by the backend as HTTP-only; we just store the
-      // user in memory.
       setUser(data.data.user)
-      // Notify sibling tabs that we're now signed in.
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
         const channel = new BroadcastChannel('auth')
         channel.postMessage({ type: 'logged-in', user: data.data.user })
