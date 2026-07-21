@@ -60,7 +60,7 @@ export default function SettingsPage() {
       />
 
       <Tabs defaultValue="profile" className="gap-6">
-        <TabsList className="!h-11 w-full max-w-sm grid-cols-2 overflow-hidden rounded-lg p-1 sm:grid">
+        <TabsList className="h-11! w-full max-w-sm grid-cols-2 overflow-hidden rounded-lg p-1 sm:grid">
           <TabsTrigger
             value="profile"
             className="h-9 px-4 data-active:bg-primary data-active:text-primary-foreground dark:data-active:border-transparent dark:data-active:bg-primary dark:data-active:text-primary-foreground"
