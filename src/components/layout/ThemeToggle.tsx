@@ -13,11 +13,11 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return <Button variant="ghost" size="icon" disabled />;
+    return <Button variant="ghost" size="icon" className="size-8 rounded-full" disabled />;
   }
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleTheme}>
+    <Button variant="ghost" size="icon" className="size-8 rounded-full" onClick={toggleTheme} aria-label="Toggle theme">
       {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </Button>
   );
