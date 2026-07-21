@@ -41,6 +41,7 @@ export interface Transaction {
   receiptUrl?: string | null;
   isRecurring: boolean;
   recurringRule?: RecurringRule | null;
+  createdAt?: string;
   categoryId: string;
   category?: Category;
 }

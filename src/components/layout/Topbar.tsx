@@ -154,7 +154,7 @@ export function Topbar() {
             </SheetTrigger>
 
             <SheetContent side="left" className="w-[85vw] max-w-xs">
-              <SheetHeader className="border-b px-5 py-5">
+              <SheetHeader className="border-b p-4">
                 <div className="flex items-center gap-3 pr-10">
                   <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ff7a2f] text-xs font-bold text-white">
                     {initials}
@@ -172,7 +172,7 @@ export function Topbar() {
 
               <nav
                 aria-label="Mobile navigation"
-                className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2"
+                className="flex flex-1 flex-col gap-1 overflow-y-auto px-4"
               >
                 {links.map(({ href, label, icon: Icon }) => {
                   const active = isActive(href, pathname)
@@ -183,7 +183,7 @@ export function Topbar() {
                       onClick={() => setDrawerOpen(false)}
                       aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
                         active &&
                           'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                       )}

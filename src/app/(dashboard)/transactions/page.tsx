@@ -1,7 +1,7 @@
 'use client'
 
-import { ImportCsvDialog } from '@/components/transactions/ImportCsvDialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ImportCsvDialog } from '@/components/transactions/ImportCsvDialog'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { TransactionTable } from '@/components/transactions/TransactionTable'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAuth } from '@/context/AuthContext'
 import {
   useAddTransactionMutation,
   useDeleteTransactionMutation,
@@ -29,9 +30,12 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 export default function TransactionsPage() {
+  const { user } = useAuth()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const { data, isLoading } = useTransactionsQuery({
-    page: 1,
-    limit: 20,
+    page,
+    limit: pageSize,
     sortBy: 'date',
     sortOrder: 'desc',
   })
@@ -92,35 +96,40 @@ export default function TransactionsPage() {
         description="Track every income and expense entry with quick import, edit, and delete controls."
         actions={
           <>
-          <ImportCsvDialog />
-          <Dialog
-            open={open}
-            onOpenChange={(next) => {
-              setOpen(next)
-              if (!next) setEditing(null)
-            }}
-          >
-            <DialogTrigger
-              render={
-                <Button onClick={() => setEditing(null)} className="gap-1.5" />
-              }
+            <ImportCsvDialog />
+            <Dialog
+              open={open}
+              onOpenChange={(next) => {
+                setOpen(next)
+                if (!next) setEditing(null)
+              }}
             >
-              <Plus className="h-4 w-4" />
-              Add Transaction
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {editing ? 'Edit' : 'Add'} Transaction
-                </DialogTitle>
-              </DialogHeader>
-              <TransactionForm
-                defaultValues={editing ?? undefined}
-                isSubmitting={addMutation.isPending || updateMutation.isPending}
-                onSubmit={handleSubmit}
-              />
-            </DialogContent>
-          </Dialog>
+              <DialogTrigger
+                render={
+                  <Button
+                    onClick={() => setEditing(null)}
+                    className="gap-1.5"
+                  />
+                }
+              >
+                <Plus className="h-4 w-4" />
+                Add Transaction
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {editing ? 'Edit' : 'Add'} Transaction
+                  </DialogTitle>
+                </DialogHeader>
+                <TransactionForm
+                  defaultValues={editing ?? undefined}
+                  isSubmitting={
+                    addMutation.isPending || updateMutation.isPending
+                  }
+                  onSubmit={handleSubmit}
+                />
+              </DialogContent>
+            </Dialog>
           </>
         }
       />
@@ -136,25 +145,30 @@ export default function TransactionsPage() {
           </CardContent>
         </Card>
       ) : data && data.data.length > 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <TransactionTable
-              transactions={data.data}
-              onEdit={(t) => {
-                setEditing(t)
-                setOpen(true)
-              }}
-              onDelete={(id) => setConfirmDelete(id)}
-            />
-          </CardContent>
-        </Card>
+        <TransactionTable
+          transactions={data.data}
+          currency={user?.currency}
+          page={page}
+          pageSize={pageSize}
+          total={data.meta?.total ?? data.data.length}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size)
+            setPage(1)
+          }}
+          onEdit={(t) => {
+            setEditing(t)
+            setOpen(true)
+          }}
+          onDelete={(id) => setConfirmDelete(id)}
+        />
       ) : (
         <Card>
           <CardContent className="p-12 flex flex-col items-center justify-center text-center text-muted-foreground">
             <Receipt className="h-10 w-10 mb-3" />
             <p className="font-medium">No transactions yet</p>
             <p className="text-sm">
-              Click "Add Transaction" above to record your first one.
+              Click &quot;Add Transaction&quot; above to record your first one.
             </p>
           </CardContent>
         </Card>
