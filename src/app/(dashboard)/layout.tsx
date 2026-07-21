@@ -10,7 +10,7 @@ export default function DashboardLayout({
     <AuthGuard>
       <div className="min-h-dvh">
         <Topbar />
-        <main className="px-4 pb-6 pt-24 sm:px-6">{children}</main>
+        <main className="px-4 pb-6 pt-20 sm:px-6">{children}</main>
       </div>
     </AuthGuard>
   )

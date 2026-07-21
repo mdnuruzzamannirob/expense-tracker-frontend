@@ -1,4 +1,5 @@
 'use client'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -34,7 +35,10 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <PageHeader
+          title="Settings"
+          description="Manage your profile, currency preference, and account security."
+        />
         <Skeleton className="h-48 w-full" />
         <Skeleton className="h-48 w-full" />
       </div>
@@ -43,7 +47,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+      <PageHeader
+        title="Settings"
+        description="Manage your profile, currency preference, and account security."
+      />
 
       <Card>
         <CardHeader className="border-b">

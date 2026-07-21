@@ -1,12 +1,15 @@
 import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Inter } from 'next/font/google'
+import { Geist, Geist_Mono, Google_Sans_Flex } from 'next/font/google'
 import './globals.css'
 
 import { Toaster } from '@/components/ui/sonner'
 import { Providers } from './providers'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const googleSansFlex = Google_Sans_Flex({
+  subsets: ['latin'],
+  variable: '--font-sans',
+})
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,7 +40,7 @@ export default function RootLayout({
         geistSans.variable,
         geistMono.variable,
         'font-sans',
-        inter.variable,
+        googleSansFlex.variable,
       )}
       suppressHydrationWarning
     >

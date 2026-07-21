@@ -1,4 +1,5 @@
 "use client";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TrendChart } from "@/components/charts/TrendChart";
 import { CategoryPieChart } from "@/components/charts/CategoryPieChart";
@@ -52,6 +53,10 @@ export default function DashboardHomePage() {
   if (!mounted || !dateParams) {
     return (
       <div className="space-y-6">
+        <PageHeader
+          title="Financial Overview"
+          description="Real-time financial insights to help you make informed decisions."
+        />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
@@ -78,6 +83,10 @@ export default function DashboardHomePage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="Financial Overview"
+        description="Real-time financial insights to help you make informed decisions."
+      />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Income</CardTitle></CardHeader>

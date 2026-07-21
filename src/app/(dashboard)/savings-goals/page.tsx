@@ -1,4 +1,5 @@
 'use client'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { GoalCard } from '@/components/savings/GoalCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -77,8 +78,10 @@ export default function SavingsGoalsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Savings Goals</h1>
+      <PageHeader
+        title="Savings Goals"
+        description="Plan targets, add contributions, and keep long-term savings progress visible."
+        actions={
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button className="gap-1.5" />}>
             <Plus className="h-4 w-4" />
@@ -151,7 +154,8 @@ export default function SavingsGoalsPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

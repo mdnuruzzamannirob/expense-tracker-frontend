@@ -1,6 +1,7 @@
 'use client'
 import { BudgetCard } from '@/components/budgets/BudgetCard'
 import { BudgetForm } from '@/components/budgets/BudgetForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -28,8 +29,10 @@ export default function BudgetsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Budgets</h1>
+      <PageHeader
+        title="Budgets"
+        description="Set monthly limits by category and monitor spending before it runs ahead."
+        actions={
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button className="gap-1.5" />}>
             <Plus className="h-4 w-4" />
@@ -57,7 +60,8 @@ export default function BudgetsPage() {
             />
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (

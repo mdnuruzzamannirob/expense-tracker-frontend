@@ -1,6 +1,7 @@
 'use client'
 
 import { ImportCsvDialog } from '@/components/transactions/ImportCsvDialog'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { TransactionTable } from '@/components/transactions/TransactionTable'
 import { Button } from '@/components/ui/button'
@@ -86,9 +87,11 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Transactions</h1>
-        <div className="flex gap-2">
+      <PageHeader
+        title="Transactions"
+        description="Track every income and expense entry with quick import, edit, and delete controls."
+        actions={
+          <>
           <ImportCsvDialog />
           <Dialog
             open={open}
@@ -118,8 +121,9 @@ export default function TransactionsPage() {
               />
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {isLoading ? (
         <Card>

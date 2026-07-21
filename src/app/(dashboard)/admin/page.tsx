@@ -1,4 +1,5 @@
 'use client'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,7 @@ import {
 import { RoleGuard } from '@/components/layout/RoleGuard'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, extractErrorMessage } from '@/lib/api'
-import { UserCheck, UserX, ShieldCheck, AlertTriangle } from 'lucide-react'
+import { UserCheck, UserX, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ApiResponse, AdminUser, AdminStats } from '@/types'
 
@@ -48,10 +49,10 @@ function AdminContent() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold flex items-center gap-2">
-        <ShieldCheck className="h-6 w-6" />
-        Admin
-      </h1>
+      <PageHeader
+        title="Admin"
+        description="Monitor platform activity and manage user access from one control panel."
+      />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader>

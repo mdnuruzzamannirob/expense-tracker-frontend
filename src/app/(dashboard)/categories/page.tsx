@@ -1,5 +1,6 @@
 'use client'
 import { CategoryAddModal } from '@/components/categories/CategoryAddModal'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -44,8 +45,10 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Categories</h1>
+      <PageHeader
+        title="Categories"
+        description="Organize transactions into income and expense groups for cleaner reports."
+        actions={
         <CategoryAddModal
           iconOnly={false}
           label="Add Category"
@@ -56,7 +59,8 @@ export default function CategoriesPage() {
             </Button>
           }
         />
-      </div>
+        }
+      />
 
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
